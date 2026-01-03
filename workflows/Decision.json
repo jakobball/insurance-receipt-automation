@@ -1,0 +1,859 @@
+{
+  "name": "Decision",
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "99aeca6b-b1b4-4a1b-bc1c-2aa212adad2e",
+              "leftValue": "={{ $('Webhook').item.binary}}",
+              "rightValue": 1,
+              "operator": {
+                "type": "object",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        0
+      ],
+      "id": "7c4c069e-a0ff-4e0c-9b1b-6969dee7f7c4",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=name: {{ $json.output.name }}\nemail: {{ $json.output.email }}\namount:{{ $json.output.amount }}\nreason:{{ $json.output.reason }}\n\n- Antworte direkt mit dem JSON-Objekt, NICHT mit einem String",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Du bist ein Experte für deutsche Krankenkassen-Erstattungen.\n\nKlassifiziere den Antrag und gib AUSSCHLIESSLICH JSON zurück (kein Markdown, keine Erklärungen):\n\n{\n  \"ai_label\": \"...\",\n  \"ai_topic\": \"...\",\n  \"ai_conf\": 0.0,\n  \"ai_status\": \"...\"\n}\n\nKRITERIEN:\n\nai_label:\n- \"ok\": Alle Infos vorhanden, plausibel, Betrag realistisch\n- \"missing_info\": Betrag oder Grund fehlt/unklar\n- \"suspicious\": Ungewöhnlich hoch, widersprüchlich, verdächtig\n- \"edge_case\": Grenzfall, benötigt manuelle Prüfung\n\nai_topic:\n- Beschreibe mit EINEM deutschen Wort (z.B. \"Zahnreinigung\", \"Brille\", \"Massage\", \"Physiotherapie\", \"Medikament\")\n\nai_conf:\n- WICHTIG: Berechne deine ECHTE Konfidenz als Dezimalzahl zwischen 0.0 und 1.0\n- Hohe Konfidenz (0.85-1.0): Klare, vollständige Infos, eindeutige Klassifikation\n- Mittlere Konfidenz (0.5-0.85): Einige Infos fehlen, aber Klassifikation möglich\n- Niedrige Konfidenz (0.0-0.5): Sehr unklar, widersprüchlich, kaum Infos\n\nai_status:\n- \"APPROVED\": Betrag ≤100€ UND ai_label=\"ok\" UND plausibel\n- \"DECLINED\": Betrag >1000€ ODER offensichtlich unseriös/ungültig\n- \"NEEDS_TALK\": Alles dazwischen, bei Unklarheiten, missing_info, suspicious, edge_case\n\nBEISPIELE:\n\nInput: \"Zahnreinigung 85€, vollständige Beschreibung bei Dr. Müller\"\nOutput: {\"ai_label\":\"ok\",\"ai_topic\":\"Zahnreinigung\",\"ai_conf\":0.95,\"ai_status\":\"APPROVED\"}\n\nInput: \"Behandlung 250€, vage Beschreibung\"\nOutput: {\"ai_label\":\"missing_info\",\"ai_topic\":\"Behandlung\",\"ai_conf\":0.6,\"ai_status\":\"NEEDS_TALK\"}\n\nInput: \"Irgendwas 45€\"\nOutput: {\"ai_label\":\"missing_info\",\"ai_topic\":\"Unbekannt\",\"ai_conf\":0.3,\"ai_status\":\"NEEDS_TALK\"}\nAntworte direkt mit dem JSON-Objekt, NICHT mit einem String\nGib außerdem immer eine Antwort!\nNUR JSON. KEINE ERKLÄRUNGEN.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        2336,
+        80
+      ],
+      "id": "b4954871-bd7d-45c7-bd2f-332ca48d91ea",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseFormat": "json_object"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        2320,
+        288
+      ],
+      "id": "10c4c6cb-6f8b-4f45-96ba-44535e8e0b62",
+      "name": "DeepSeek Chat Model",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "D3EM6m6NPI8r50Ny",
+          "name": "DeepSeek account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fcd7faf2-b47e-4972-aa9f-a0e17fcf59c8",
+              "name": "output.name",
+              "value": "={{ $json.body.name}}",
+              "type": "string"
+            },
+            {
+              "id": "dc71eef1-e871-40bf-bef7-3f69753641f1",
+              "name": "output.email",
+              "value": "={{ $json.body.email }}",
+              "type": "string"
+            },
+            {
+              "id": "7f934e56-3999-4b06-ab90-1909f02b68aa",
+              "name": "output.amount",
+              "value": "={{ $json.body.amount }}",
+              "type": "string"
+            },
+            {
+              "id": "2ca360f8-feac-4c41-b1aa-3a6f725a0f5b",
+              "name": "output.reason",
+              "value": "={{ $json.body.reason }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1248,
+        336
+      ],
+      "id": "44439d6a-5961-4e51-bac0-177124740bd5",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"ai_label\": \"string\",\n  \"ai_topic\": \"string\",\n  \"ai_conf\": \"number\",\n  \"ai_status\": \"string\",\n  \"amount\": \"number\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        2496,
+        368
+      ],
+      "id": "6f890f8d-7d48-44cb-b06b-d357ecffe970",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fc5e8a32-ccd5-4d58-9086-f6997961f20a",
+              "name": "output.ai_label",
+              "value": "={{ $json.output.ai_label }}",
+              "type": "string"
+            },
+            {
+              "id": "0a992378-79b8-4618-99c2-cb22c9aee951",
+              "name": "output.ai_topic",
+              "value": "={{ $json.output.ai_topic }}",
+              "type": "string"
+            },
+            {
+              "id": "c67c0dfa-bdd7-4b96-9999-5a943a2572f1",
+              "name": "output.ai_conf",
+              "value": "={{ $json.output.ai_conf }}",
+              "type": "string"
+            },
+            {
+              "id": "6dccd474-c4c3-4b22-aa87-44e3f7134813",
+              "name": "output.ai_status",
+              "value": "={{ $json.output.ai_status }}",
+              "type": "string"
+            },
+            {
+              "id": "ba4b0dcc-0c6e-42e7-a21f-fcd033e536a0",
+              "name": "output.amount",
+              "value": "={{ $json.output.amount }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2816,
+        48
+      ],
+      "id": "cd647753-5a98-4557-9baf-39d5060d94a5",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3408,
+        112
+      ],
+      "id": "0594c147-362d-42c8-b303-32354bb36d58",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "17frTZn_oYBmel1gCmYrFovk43VvqW0kFj6WKNyYcWTc",
+          "mode": "list",
+          "cachedResultName": "Claims",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17frTZn_oYBmel1gCmYrFovk43VvqW0kFj6WKNyYcWTc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Tabellenblatt1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17frTZn_oYBmel1gCmYrFovk43VvqW0kFj6WKNyYcWTc/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2960,
+        208
+      ],
+      "id": "d1424fe0-8356-4039-ac01-d46df8db0f9a",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Rxi66kPs9jFTEISX",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Alle Zeilen vom \"Get row(s) in sheet\"-Node holen\nconst rows = ( $input.all()).map(i => i.json);\n\n// erste Zeile, in der 'date' leer ist, finden\nfor (const row of rows) {\n  const d = (row.date ?? row['date '] ?? row['Date'] ?? '').toString().trim();\n  if (d === '') {\n    return [{ json: { nextRow: row.row_number } }];\n  }\n}\n\n// wenn keine leere 'date'-Zeile existiert -> hinter der letzten schreiben\nconst last = rows.at(-1)?.row_number ?? 1;\nreturn [{ json: { nextRow: last + 1 } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3216,
+        256
+      ],
+      "id": "0507d8a9-4229-442c-9461-ee445541f8a7",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "17frTZn_oYBmel1gCmYrFovk43VvqW0kFj6WKNyYcWTc",
+          "mode": "list",
+          "cachedResultName": "Claims",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17frTZn_oYBmel1gCmYrFovk43VvqW0kFj6WKNyYcWTc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Tabellenblatt1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/17frTZn_oYBmel1gCmYrFovk43VvqW0kFj6WKNyYcWTc/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "date": "={{ $now.format('dd-MM-yyyy') }}",
+            "ai_label": "={{ $json.output.ai_label }}",
+            "ai_topic": "={{ $json.output.ai_topic }}",
+            "ai_conf": "={{ $json.output.ai_conf }}",
+            "ai_status": "={{ $json.output.ai_status }}",
+            " amount": "={{ $json.output.amount }}",
+            "email": "={{ $('Edit Fields2').item.json.output.email }}",
+            "name ": "={{ $('Edit Fields2').item.json.output.name }}",
+            "updatedAt": "={{ $now.format('dd-MM-yyyy') }}",
+            "id": "={{ $json.nextRow -1}}",
+            "description": "={{ $('Edit Fields2').item.json.output.reason }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "date",
+              "displayName": "date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "name ",
+              "displayName": "name ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": " amount",
+              "displayName": " amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ai_status",
+              "displayName": "ai_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ai_label",
+              "displayName": "ai_label",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ai_topic",
+              "displayName": "ai_topic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ai_conf",
+              "displayName": "ai_conf",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "review_status",
+              "displayName": "review_status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "review_comment",
+              "displayName": "review_comment",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "review_confirm",
+              "displayName": "review_confirm",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "updatedAt",
+              "displayName": "updatedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3584,
+        112
+      ],
+      "id": "78e3a039-ad27-49bb-9f89-fc890dddc575",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "Rxi66kPs9jFTEISX",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ocr.space/parse/image",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "image/png"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "HIER_DEINEN_KEY_EINFUEGEN"
+            },
+            {
+              "name": "language",
+              "value": "ger"
+            },
+            {
+              "name": "scale",
+              "value": "true"
+            },
+            {
+              "name": "OCREngine",
+              "value": "2"
+            },
+            {
+              "name": "isTable",
+              "value": "false"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "={{ Object.keys($binary)[0] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        848,
+        -96
+      ],
+      "id": "af300a9a-cfa5-459a-96e0-98dd3eb4a889",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Extrahiere folgende Informationen aus dem Text:\n\nOCR-Text:\n{{ $json.ParsedResults[0].ParsedText }}\nGesucht:\n- Name: Vor- und Nachname der Person\n- Email: E-Mail-Adresse\n- Betrag: Kosten in Euro (als Zahl)\n- Grund: Behandlung/Diagnose bitte ausführlicher text übernehmen\n\nAntworte NUR mit JSON.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Du bist ein Experte für die Extraktion von Daten aus deutschen Krankenkassen-Dokumenten.\nDeine Aufgabe: Extrahiere aus dem gegebenen OCR-Text die folgenden Informationen und gib sie als JSON zurück:\n{\n\"name\": \"Vor- und Nachname der Person\",\n\"email\": \"E-Mail-Adresse\",\n\"amount\": 0.0,\n\"reason\": \"Grund/Diagnose/Behandlung\"\n}\nREGELN:\n\n* name: Vollständiger Name (Vorname + Nachname)\n* email: E-Mail-Adresse im korrekten Format\n* amount: Betrag als Dezimalzahl (z.B. 87.5 statt \"87,50 €\")\n* reason: Kurze Beschreibung der Behandlung oder Diagnose (max 50 Zeichen)\n  WICHTIG:\n* Wenn ein Feld nicht gefunden wird, setze es auf null oder \"\"\n* Gib NUR das JSON zurück, keine Erklärungen\n* Keine Markdown-Formatierung, kein Text außer dem JSON\n  BEISPIEL:\n  Input: \"Name: Max Müller, Email: [max@test.de](mailto:max@test.de), Betrag: 123,45 EUR, Diagnose: Zahnreinigung\"\n  Output: {\"name\":\"Max Müller\",\"email\":\"[max@test.de](mailto:max@test.de)\",\"amount\":123.45,\"reason\":\"Zahnreinigung\"}\n\n\nDU DARFST KEINE FRAGEN STELLEN SONDERN WIRKLICH NUR IN JSON ANTWORTEN.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1280,
+        -176
+      ],
+      "id": "16fd1a6d-b5dd-44d9-b6d1-28418ad2d8dc",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        1248,
+        16
+      ],
+      "id": "caa148db-8580-4be1-b625-324b6b73c489",
+      "name": "DeepSeek Chat Model1",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "D3EM6m6NPI8r50Ny",
+          "name": "DeepSeek account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"name\": \"string\",\n  \"email\": \"string\", \n  \"amount\": \"number\",\n  \"reason\": \"string\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1424,
+        16
+      ],
+      "id": "c2362ea4-133b-4d23-9fb5-d070ac50b132",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "claims/upload",
+        "responseMode": "lastNode",
+        "options": {
+          "allowedOrigins": "*",
+          "binaryPropertyName": "file "
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "fca10f2c-3ab9-4bd6-93f1-e88217816cde",
+      "name": "Webhook",
+      "webhookId": "3bf89648-6cfb-4a6e-999c-b9214637c8b9"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fcd7faf2-b47e-4972-aa9f-a0e17fcf59c8",
+              "name": "output.name",
+              "value": "={{ $json.output.name }}",
+              "type": "string"
+            },
+            {
+              "id": "dc71eef1-e871-40bf-bef7-3f69753641f1",
+              "name": "output.email",
+              "value": "={{ $json.output.email }}",
+              "type": "string"
+            },
+            {
+              "id": "7f934e56-3999-4b06-ab90-1909f02b68aa",
+              "name": "output.amount",
+              "value": "={{ $json.output.amount }}",
+              "type": "string"
+            },
+            {
+              "id": "2ca360f8-feac-4c41-b1aa-3a6f725a0f5b",
+              "name": "output.reason",
+              "value": "={{ $json.output.reason }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2144,
+        80
+      ],
+      "id": "3659c1ba-2070-4f91-9983-3f0a7a1fa9d4",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "= {{$now.format('dd-MM-yyyy')}} Ihr Antrag bei der Extra Krankenkasse ",
+        "message": "=Guten Tag {{ $json['name '] }},\n\nvielen Dank für das Einreichen Ihrer Unterlagen. Ihr Anliegen wurde an eine fachkundige Stelle weitergegeben, damit es sorgfältig geprüft werden kann.  \n\nSobald uns die Rückmeldung des zuständigen Experten vorliegt, informieren wir Sie umgehend über das Ergebnis.  \n\nMit freundlichen Grüßen  \nIhr Erstattungsteam\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        3792,
+        112
+      ],
+      "id": "d0123ed4-af74-4c7b-9cef-7ba3ba8203f4",
+      "name": "Send a message",
+      "webhookId": "c1e30d8e-f722-46ed-b7bd-7829782c55a9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "C112qsiPpNuij1T5",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "rotate",
+        "dataPropertyName": "={{ Object.keys($binary)[0] }}",
+        "rotate": 360,
+        "options": {
+          "format": "jpeg"
+        }
+      },
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        432,
+        -96
+      ],
+      "id": "4a36e53f-a20b-4df8-947f-9eb3a18f1d7f",
+      "name": "Edit Image"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Image",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Image": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "47f0a2bf-5f8c-4c78-ba78-a3d5d842f81c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6b45ccbf4a347de8e13e151fbd4feabf5d7217c5483951772d7986e1f729f6b2"
+  },
+  "id": "YMziVnUAd75ulub5",
+  "tags": []
+}
