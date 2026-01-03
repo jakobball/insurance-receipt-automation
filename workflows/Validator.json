@@ -1,0 +1,154 @@
+{
+  "name": "Validator",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=  \"id\": \"{{ $json.body.id }}\",\n  \"name\": \"{{ $json.body.name }}\",\n  \"status\": \"{{ $json.body.review_status }}\",\n  \"amount\": \"{{ $json.body.amount }}\",\n  \"review_comment\": \"{{ $json.body.review_comment}}\"\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Du bist Sachbearbeiter einer Kranken-/Erstattungsstelle. \n\nAUSGABE: Nur JSON, keine Erklärungen, keine Fragen:\n{\"subject\":\"Betreff\",\"response\":\"HTML-Body\"}\n\nPFLICHT-REGEL: Wenn review_comment vorhanden → IMMER im Text verwenden! {{ $json.body.review_comment }}\n\nANREDE: \"Guten Tag [Name],\" (mit Titel falls vorhanden)\n\nLÄNGE: E-Mails sollen ausführlich sein (mindestens 4-6 Absätze). Füge Kontext, Hintergrundinformationen und nächste Schritte hinzu.\n\nSTATUS-REGELN:\n\nAPPROVED:\n- Einleitung: Freundlicher Einstieg + Bezug zum Antrag\n- Prüfung bestätigen: \"Wir haben Ihren Antrag sorgfältig geprüft. [review_comment].\"\n- Genehmigung: \"Wir freuen uns, Ihnen mitteilen zu können, dass wir Ihren Antrag in Höhe von [Betrag] EUR genehmigen.\"\n- Auszahlung: \"Die Erstattung wird in den nächsten [X] Werktagen auf Ihr Konto überwiesen.\"\n- Abschluss: Weitere Hilfe anbieten + freundliche Grußformel\n\nDECLINED:\n- Einleitung: Bezug zum Antrag nehmen\n- Prüfung: \"Wir haben Ihren Antrag eingehend geprüft.\"\n- Ablehnung mit Begründung: \"Leider müssen wir Ihren Antrag ablehnen. [review_comment].\"\n- Hinweis: Welche Dokumente/Schritte nötig wären (falls relevant)\n- Abschluss: Kontaktmöglichkeit anbieten + freundliche Grußformel\n\nNEEDS_TALK:\n- Einleitung: Bezug zum Antrag + Dank für Einreichung\n- Grund nennen: \"Bei der Prüfung Ihrer Unterlagen ist uns Folgendes aufgefallen: [review_comment].\"\n- Austausch erbitten: \"Um Ihren Antrag vollständig bearbeiten zu können, benötigen wir einen kurzen Austausch mit Ihnen.\"\n- meeting_link einbinden: \"Bitte vereinbaren Sie einen Termin über folgenden Link: [meeting_link]\" ODER \"Bitte nehmen Sie telefonisch oder per E-Mail Kontakt mit uns auf.\"\n- Was besprochen werden soll (falls aus review_comment ableitbar)\n- Abschluss: Freundliche Grußformel\n\nBEISPIEL (NEEDS_TALK):\nInput: review_comment=\"Falsche daten angegeben\"\nOutput: \"<p>Guten Tag Thomas Weber,</p><p>vielen Dank für die Einreichung Ihres Erstattungsantrags. Wir haben Ihre Unterlagen geprüft und möchten mit Ihnen einige Details besprechen.</p><p>Bei der Prüfung sind uns falsche Daten aufgefallen, die wir gemeinsam mit Ihnen klären möchten. Dies betrifft insbesondere [spezifische Details, falls ableitbar].</p><p>Um Ihren Antrag zügig bearbeiten zu können, bitten wir Sie, zeitnah Kontakt mit uns aufzunehmen. So können wir die offenen Punkte gemeinsam klären und Ihren Antrag abschließend bearbeiten.</p><p>Bei Rückfragen stehen wir Ihnen gerne zur Verfügung.</p><p>Mit freundlichen Grüßen<br>Ihr Erstattungsteam</p>\"\n\nTON: Höflich, ausführlich, professionell, empathisch. Strukturierte Absätze mit klarem Aufbau."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1072,
+        -432
+      ],
+      "id": "198f5065-2894-43df-9f28-017766727212",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        -256
+      ],
+      "id": "b8eca498-fa49-4ecd-af0b-681483aaebab",
+      "name": "DeepSeek Chat Model",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "D3EM6m6NPI8r50Ny",
+          "name": "DeepSeek account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Webhook').item.json.body.email }}",
+        "subject": "={{ $json.output.subject }}",
+        "message": "={{ $json.output.response }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1424,
+        -432
+      ],
+      "id": "448363a6-66b0-42eb-a22f-6f3565a1c311",
+      "name": "Send a message",
+      "webhookId": "168de0b9-7a46-4166-b387-1c76841ff918",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "C112qsiPpNuij1T5",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"subject\": \"string\",\n  \"response\": \"string\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1216,
+        -272
+      ],
+      "id": "92629193-6c7a-4d5a-83a7-44175d91e4eb",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "283ddc36-c459-4662-b82f-1ac372dbcd1a",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        608,
+        -144
+      ],
+      "id": "c09d45fa-ebd2-4971-bd4e-9d6570e8ad85",
+      "name": "Webhook",
+      "webhookId": "283ddc36-c459-4662-b82f-1ac372dbcd1a"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "DeepSeek Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "26441f43-d4f5-4645-8c11-85880a3b5c0d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6b45ccbf4a347de8e13e151fbd4feabf5d7217c5483951772d7986e1f729f6b2"
+  },
+  "id": "1YKrVnRrdQBA8Fk6",
+  "tags": []
+}
