@@ -1,5 +1,5 @@
 # insurance-receipt-automation
-# 🏥 AI Claims Automation 
+# AI Claims Automation 
 
 > Eine intelligente Automatisierung zur Verarbeitung von Versicherungsanträgen mit OCR, DeepSeek LLM Analyse und automatisierter Kundenkommunikation.
 
@@ -8,7 +8,7 @@
 ![OCR](https://img.shields.io/badge/Vision-OCR.space-orange?style=flat-square)
 ![Google Sheets](https://img.shields.io/badge/Database-Google%20Sheets-green?style=flat-square&logo=google-sheets)
 
-## 📖 Über das Projekt
+## Über das Projekt
 
 Dieses Projekt demonstriert einen End-to-End-Prozess für das Einreichen und Prüfen von Rückerstattungsanträgen (z.B. Arztrechnungen). Es ersetzt manuelle Dateneingabe durch KI-gestützte Extraktion und Validierung.
 
@@ -16,7 +16,7 @@ Das System besteht aus zwei Haupt-Workflows:
 1.  **Ingestion & Analysis:** Empfang der Dokumente, OCR, KI-Validierung und Speicherung.
 2.  **Validation & Response:** Automatisierte, aber personalisierte E-Mail-Kommunikation basierend auf der Entscheidung (Genehmigt/Abgelehnt/Rückfrage).
 
-## ⚙️ Architektur & Workflows
+## Architektur & Workflows
 
 ### 1. Claims Ingestion (` Decision.json`)
 Dieser Workflow ist der Einstiegspunkt für neue Anträge.
@@ -40,7 +40,7 @@ Dieser Workflow kümmert sich um die finale Kommunikation mit dem Kunden.
     * *Bei Rückfragen:* Erklärt genau, welche Informationen fehlen (basierend auf dem Review-Kommentar).
     * *Bei Ablehnung:* Formuliert eine empathische, aber klare Absage.
 
-## 🛠 Tech Stack
+## Tech Stack
 
 * **Orchestrator:** [n8n](https://n8n.io/)
 * **LLM / AI:** DeepSeek Chat Model (via API) für Extraktion und Textgenerierung.
